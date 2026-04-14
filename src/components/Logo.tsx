@@ -9,7 +9,7 @@ export const Logo: React.FC<LogoProps> = ({ className = "w-12 h-12" }) => {
     <img 
       src="/logo.png" 
       alt="African Strikers Logo" 
-      className={`object-contain ${className}`}
+      className={`object-contain mix-blend-screen ${className}`}
     />
   );
 };

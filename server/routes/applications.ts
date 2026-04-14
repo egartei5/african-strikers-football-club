@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { getDb } from "../db";
 import { requireAdmin, AuthRequest } from "../middleware/auth";
-import { sendWelcomeEmail } from "../email";
+import { sendWelcomeEmail, sendRejectionEmail } from "../email";
 
 const router = Router();
 
@@ -48,8 +48,16 @@ router.put("/:id/status", requireAdmin, async (req: AuthRequest, res: Response) 
       });
   }
 
+  // Send rejection email when application is rejected
+  if (status === "rejected" && existing.status !== "rejected") {
+    sendRejectionEmail(existing.email, existing.full_name, existing.position)
+      .then((sent) => {
+        if (sent) console.log(`📧 Rejection email queued for ${existing.full_name} (${existing.email})`);
+      });
+  }
+
   const updated = db.prepare("SELECT * FROM applications WHERE id = ?").get(id);
-  res.json({ ...updated as object, emailSent: status === "accepted" && existing.status !== "accepted" });
+  res.json({ ...updated as object, emailSent: (status === "accepted" && existing.status !== "accepted") || (status === "rejected" && existing.status !== "rejected") });
 });
 
 // DELETE /api/applications/:id — Admin

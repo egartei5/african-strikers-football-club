@@ -5,6 +5,23 @@ import { Tilt3DCard } from "@/components/Tilt3DCard";
 import { useDocumentTitle } from "@/lib/useDocumentTitle";
 import { Shield, Users } from "lucide-react";
 
+// Map player names to their gallery photos
+const PLAYER_IMAGES: Record<string, string> = {
+  "Prince": "/gallery/Prince.JPG",
+  "Ray Ra": "/gallery/Rays.JPG",
+  "Jojo": "/gallery/Jojo.JPG",
+  "Patrick": "/gallery/Patrick.JPG",
+  "Lawrence": "/gallery/Lawrence.JPG",
+  "Yussufu": "/gallery/Yussef and Natla.JPG",
+  "Koffie": "/gallery/Koffie.JPG",
+  "Edward": "/gallery/Edward.JPG",
+  "Enoch Gartei": "/gallery/Enoch Gartei.JPG",
+  "Elton Saylee": "/gallery/Elton Saylee.JPG",
+  "Jack": "/gallery/Jack.JPG",
+  "Kafeme": "/gallery/Kafeme.JPG",
+  "Barclay": "/gallery/Barclay.JPG",
+};
+
 const PLAYERS = [
   // Goalkeepers
   { name: "Leo", pos: "Goalkeeper", num: "1", role: "Captain Candidate" },
@@ -126,14 +143,23 @@ export function Team() {
               >
                 <Tilt3DCard tiltMaxX={10} tiltMaxY={10} glare maxGlare={0.15}>
                   <div className="group relative rounded-2xl overflow-hidden glass-card-3d aspect-[3/4] hover:border-teal-500/50 transition-colors">
-                    {/* Gradient background with large jersey number */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-teal-950/60 to-slate-900" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="font-display text-[120px] md:text-[140px] text-white/[0.06] font-black select-none">
-                        {player.num}
-                      </span>
-                    </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+                    {/* Player photo or gradient background */}
+                    {PLAYER_IMAGES[player.name] ? (
+                      <>
+                        <img src={PLAYER_IMAGES[player.name]} alt={player.name} className="absolute inset-0 w-full h-full object-cover object-top" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/30 to-transparent" />
+                      </>
+                    ) : (
+                      <>
+                        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-teal-950/60 to-slate-900" />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="font-display text-[120px] md:text-[140px] text-white/[0.06] font-black select-none">
+                            {player.num}
+                          </span>
+                        </div>
+                      </>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
 
                     <div className="absolute top-4 right-4 w-12 h-12 rounded-full bg-teal-600/90 backdrop-blur-sm flex items-center justify-center text-white font-black text-xl shadow-lg border border-white/20">
                       {player.num}

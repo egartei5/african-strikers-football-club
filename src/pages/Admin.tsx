@@ -576,6 +576,7 @@ function ContactsTab({ authHeaders, onUpdate }: { authHeaders: () => Record<stri
 function ApplicationsTab({ authHeaders, onUpdate }: { authHeaders: () => Record<string, string>; onUpdate: () => void }) {
   const [apps, setApps] = useState<any[]>([]);
   const [expanded, setExpanded] = useState<number | null>(null);
+  const [emailFeedback, setEmailFeedback] = useState<{ id: number; type: string } | null>(null);
 
   const load = useCallback(async () => {
     const res = await fetch("/api/applications", { headers: authHeaders() });
@@ -585,10 +586,26 @@ function ApplicationsTab({ authHeaders, onUpdate }: { authHeaders: () => Record<
   useEffect(() => { load(); }, [load]);
 
   const updateStatus = async (id: number, status: string) => {
-    await fetch(`/api/applications/${id}/status`, {
+    // Confirmation for accept/reject since they trigger emails
+    if (status === "accepted") {
+      if (!confirm("Accept this player? A welcome email will be sent to them congratulating them on making the team.")) return;
+    }
+    if (status === "rejected") {
+      if (!confirm("Reject this application? An email will be sent informing them of the decision.")) return;
+    }
+
+    const res = await fetch(`/api/applications/${id}/status`, {
       method: "PUT", headers: authHeaders(),
       body: JSON.stringify({ status }),
     });
+    const data = await res.json();
+
+    // Show email feedback toast
+    if (data.emailSent) {
+      setEmailFeedback({ id, type: status });
+      setTimeout(() => setEmailFeedback(null), 4000);
+    }
+
     load();
     onUpdate();
   };
@@ -610,6 +627,34 @@ function ApplicationsTab({ authHeaders, onUpdate }: { authHeaders: () => Record<
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
       <h2 className="font-display text-4xl uppercase tracking-tight text-white mb-8">Applications</h2>
+
+      {/* Email Sent Toast */}
+      <AnimatePresence>
+        {emailFeedback && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            className={`fixed top-24 right-6 z-50 px-6 py-4 rounded-xl shadow-2xl border backdrop-blur-xl flex items-center gap-3 ${
+              emailFeedback.type === "accepted"
+                ? "bg-emerald-950/90 border-emerald-500/40 text-emerald-300"
+                : "bg-slate-800/90 border-slate-500/40 text-slate-300"
+            }`}
+          >
+            <Mail size={20} />
+            <div>
+              <div className="font-bold text-sm">
+                {emailFeedback.type === "accepted" ? "Welcome email sent! 🎉" : "Rejection email sent"}
+              </div>
+              <div className="text-xs opacity-70">
+                {emailFeedback.type === "accepted"
+                  ? "Player has been notified they made the team"
+                  : "Applicant has been notified of the decision"}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {apps.length === 0 ? (
         <div className="glass-card-3d rounded-2xl p-12 text-center text-slate-500">No applications yet</div>
@@ -634,8 +679,30 @@ function ApplicationsTab({ authHeaders, onUpdate }: { authHeaders: () => Record<
                     <div><span className="text-slate-500">Phone:</span> <span className="text-slate-300">{a.phone}</span></div>
                   </div>
                   {a.message && <p className="text-slate-300 text-sm leading-relaxed mb-4 p-3 bg-white/5 rounded-lg">{a.message}</p>}
+
+                  {/* Trial Decision Buttons */}
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    <button onClick={() => updateStatus(a.id, "accepted")}
+                      className={`flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg border transition-all ${
+                        a.status === "accepted"
+                          ? "bg-emerald-600 text-white border-emerald-500 shadow-lg shadow-emerald-600/20"
+                          : "border-emerald-500/30 text-emerald-400 hover:bg-emerald-600 hover:text-white hover:border-emerald-500"
+                      }`}>
+                      <Check size={14} /> Accept — Send Welcome Email
+                    </button>
+                    <button onClick={() => updateStatus(a.id, "rejected")}
+                      className={`flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg border transition-all ${
+                        a.status === "rejected"
+                          ? "bg-red-600 text-white border-red-500 shadow-lg shadow-red-600/20"
+                          : "border-red-500/30 text-red-400 hover:bg-red-600 hover:text-white hover:border-red-500"
+                      }`}>
+                      <X size={14} /> Reject — Send Rejection Email
+                    </button>
+                  </div>
+
+                  {/* Other status buttons */}
                   <div className="flex flex-wrap gap-2">
-                    {["pending", "reviewed", "accepted", "rejected"].map((s) => (
+                    {["pending", "reviewed"].map((s) => (
                       <button key={s} onClick={() => updateStatus(a.id, s)}
                         className={`text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg border transition-colors ${a.status === s ? statusColors[s] : "border-white/10 text-slate-500 hover:text-white hover:border-white/20"}`}>
                         {s}
@@ -645,6 +712,14 @@ function ApplicationsTab({ authHeaders, onUpdate }: { authHeaders: () => Record<
                       <Trash2 size={12} /> Delete
                     </button>
                   </div>
+
+                  {/* Email status indicator */}
+                  {(a.status === "accepted" || a.status === "rejected") && (
+                    <div className={`mt-3 flex items-center gap-2 text-xs ${a.status === "accepted" ? "text-emerald-500" : "text-slate-500"}`}>
+                      <Mail size={12} />
+                      {a.status === "accepted" ? "Welcome email was sent to this player" : "Rejection email was sent to this applicant"}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -654,6 +729,7 @@ function ApplicationsTab({ authHeaders, onUpdate }: { authHeaders: () => Record<
     </motion.div>
   );
 }
+
 
 /* ────────────────────────────────────────────────────────────────
    STAFF TAB

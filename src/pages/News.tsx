@@ -24,7 +24,7 @@ const NEWS_ITEMS = [
     date: "Nov 20, 2025",
     author: "Media Team",
     category: "Season Recap",
-    img: "/gallery/d4a05eed-9973-460a-abd1-407ff2234054.JPG",
+    img: "/gallery/Teams.JPG",
   },
   {
     id: 3,
@@ -64,7 +64,7 @@ const NEWS_ITEMS = [
     date: "Dec 20, 2025",
     author: "Media Team",
     category: "Features",
-    img: "/gallery/f92e0131-80b7-4a65-97a9-0e5431582300.JPG",
+    img: "/gallery/game.JPG",
   },
 ];
 

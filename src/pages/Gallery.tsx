@@ -22,20 +22,15 @@ const IMAGES = [
     alt: "ASFC team formation on the pitch",
     category: "Team",
   },
+  {
+    src: "/gallery/teame.JPG",
+    alt: "ASFC team huddle",
+    category: "Team",
+  },
   // Matchday Action
   {
     src: "/gallery/Koffie.JPG",
     alt: "Koffie in action — Attacking Midfielder",
-    category: "Matchday",
-  },
-  {
-    src: "/gallery/d4a05eed-9973-460a-abd1-407ff2234054.JPG",
-    alt: "ASFC player in golden hour action",
-    category: "Matchday",
-  },
-  {
-    src: "/gallery/f92e0131-80b7-4a65-97a9-0e5431582300.JPG",
-    alt: "Players on the pitch with referee",
     category: "Matchday",
   },
   {
@@ -64,8 +59,13 @@ const IMAGES = [
     category: "Matchday",
   },
   {
-    src: "/gallery/fd71fab6-f4aa-47fe-9e7e-bab2863751f5.JPG",
-    alt: "ASFC attacking play in progress",
+    src: "/gallery/game.JPG",
+    alt: "ASFC matchday action on the pitch",
+    category: "Matchday",
+  },
+  {
+    src: "/gallery/jackandlawrence.JPG",
+    alt: "Jack and Lawrence celebrating on the pitch",
     category: "Matchday",
   },
   // Player Portraits
@@ -99,6 +99,21 @@ const IMAGES = [
     alt: "Kafeme — Winger",
     category: "Players",
   },
+  {
+    src: "/gallery/Eleton2.JPG",
+    alt: "Elton Saylee — Portrait",
+    category: "Players",
+  },
+  {
+    src: "/gallery/Jack1.JPG",
+    alt: "Jack — Portrait",
+    category: "Players",
+  },
+  {
+    src: "/gallery/Yussef and Natla.JPG",
+    alt: "Yussufu — Midfielder",
+    category: "Players",
+  },
   // Training & Warm-up
   {
     src: "/gallery/Rays.JPG",
@@ -106,18 +121,8 @@ const IMAGES = [
     category: "Training",
   },
   {
-    src: "/gallery/e7ec6498-c17c-48d5-8b15-e78fd8301762.JPG",
-    alt: "ASFC players training before match",
-    category: "Training",
-  },
-  {
-    src: "/gallery/a1af89b9-3274-4707-91aa-60d74b5e041b.JPG",
-    alt: "Players training before kickoff",
-    category: "Training",
-  },
-  {
-    src: "/gallery/d50141cc-5644-449f-ba44-6bbd822e7527.JPG",
-    alt: "Pre-match preparation on the field",
+    src: "/gallery/.JPG",
+    alt: "ASFC pre-match warm-up",
     category: "Training",
   },
 ];
