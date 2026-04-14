@@ -1,0 +1,48 @@
+{
+  "name": "african-strikers-fc",
+  "private": true,
+  "version": "1.0.0",
+  "description": "African Strikers Football Club — Official Website",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port=3000 --host=0.0.0.0",
+    "server": "tsx server/server.ts",
+    "dev:full": "concurrently \"npm run dev\" \"npm run server\"",
+    "build": "vite build",
+    "start": "NODE_ENV=production node --import tsx server/server.ts",
+    "preview": "vite preview",
+    "clean": "rm -rf dist",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@google/genai": "^1.29.0",
+    "@tailwindcss/vite": "^4.1.14",
+    "@types/cors": "^2.8.19",
+    "@vitejs/plugin-react": "^5.0.4",
+    "better-sqlite3": "^12.4.1",
+    "clsx": "^2.1.1",
+    "concurrently": "^9.2.1",
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.3",
+    "express": "^4.21.2",
+    "lucide-react": "^0.546.0",
+    "motion": "^12.23.24",
+    "nodemailer": "^8.0.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.13.1",
+    "tailwind-merge": "^3.5.0",
+    "vanilla-tilt": "^1.8.1",
+    "vite": "^6.2.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.14.0",
+    "@types/nodemailer": "^8.0.0",
+    "autoprefixer": "^10.4.21",
+    "tailwindcss": "^4.1.14",
+    "tsx": "^4.21.0",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.0"
+  }
+}
