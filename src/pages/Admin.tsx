@@ -588,26 +588,40 @@ function ApplicationsTab({ authHeaders, onUpdate }: { authHeaders: () => Record<
   const updateStatus = async (id: number, status: string) => {
     // Confirmation for accept/reject since they trigger emails
     if (status === "accepted") {
-      if (!confirm("Accept this player? A welcome email will be sent to them congratulating them on making the team.")) return;
+      if (!confirm("Accept this player and add them to the team roster? A welcome email will also be sent to congratulate them.")) return;
     }
     if (status === "rejected") {
       if (!confirm("Reject this application? An email will be sent informing them of the decision.")) return;
     }
 
-    const res = await fetch(`/api/applications/${id}/status`, {
-      method: "PUT", headers: authHeaders(),
-      body: JSON.stringify({ status }),
-    });
-    const data = await res.json();
+    try {
+      const res = await fetch(`/api/applications/${id}/status`, {
+        method: "PUT", headers: authHeaders(),
+        body: JSON.stringify({ status }),
+      });
 
-    // Show email feedback toast
-    if (data.emailSent) {
-      setEmailFeedback({ id, type: status });
-      setTimeout(() => setEmailFeedback(null), 4000);
+      if (!res.ok) {
+        const err = await res.json();
+        alert(`Error: ${err.error || "Failed to update status"}`);
+        return;
+      }
+
+      const data = await res.json();
+
+      // Show feedback toast
+      if (data.playerAdded || data.emailSent) {
+        setEmailFeedback({
+          id,
+          type: data.playerAdded ? "player_added" : status,
+        });
+        setTimeout(() => setEmailFeedback(null), 5000);
+      }
+
+      load();
+      onUpdate();
+    } catch (err) {
+      alert("Network error. Please check your connection and try again.");
     }
-
-    load();
-    onUpdate();
   };
 
   const handleDelete = async (id: number) => {
@@ -644,12 +658,18 @@ function ApplicationsTab({ authHeaders, onUpdate }: { authHeaders: () => Record<
             <Mail size={20} />
             <div>
               <div className="font-bold text-sm">
-                {emailFeedback.type === "accepted" ? "Welcome email sent! 🎉" : "Rejection email sent"}
+                {emailFeedback.type === "player_added"
+                  ? "Player added to roster! 🎉"
+                  : emailFeedback.type === "accepted"
+                    ? "Welcome email sent! 🎉"
+                    : "Rejection email sent"}
               </div>
               <div className="text-xs opacity-70">
-                {emailFeedback.type === "accepted"
-                  ? "Player has been notified they made the team"
-                  : "Applicant has been notified of the decision"}
+                {emailFeedback.type === "player_added"
+                  ? "Player has been added to the team and notified via email"
+                  : emailFeedback.type === "accepted"
+                    ? "Player has been notified they made the team"
+                    : "Applicant has been notified of the decision"}
               </div>
             </div>
           </motion.div>
