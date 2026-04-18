@@ -577,6 +577,17 @@ function ApplicationsTab({ authHeaders, onUpdate }: { authHeaders: () => Record<
   const [apps, setApps] = useState<any[]>([]);
   const [expanded, setExpanded] = useState<number | null>(null);
   const [emailFeedback, setEmailFeedback] = useState<{ id: number; type: string } | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Confirmation modal state
+  const [confirmModal, setConfirmModal] = useState<{
+    open: boolean;
+    title: string;
+    message: string;
+    confirmLabel: string;
+    confirmColor: string;
+    onConfirm: () => void;
+  }>({ open: false, title: "", message: "", confirmLabel: "", confirmColor: "", onConfirm: () => {} });
 
   const load = useCallback(async () => {
     const res = await fetch("/api/applications", { headers: authHeaders() });
@@ -585,15 +596,8 @@ function ApplicationsTab({ authHeaders, onUpdate }: { authHeaders: () => Record<
 
   useEffect(() => { load(); }, [load]);
 
-  const updateStatus = async (id: number, status: string) => {
-    // Confirmation for accept/reject since they trigger emails
-    if (status === "accepted") {
-      if (!confirm("Accept this player and add them to the team roster? A welcome email will also be sent to congratulate them.")) return;
-    }
-    if (status === "rejected") {
-      if (!confirm("Reject this application? An email will be sent informing them of the decision.")) return;
-    }
-
+  const doUpdateStatus = async (id: number, status: string) => {
+    setIsProcessing(true);
     try {
       const res = await fetch(`/api/applications/${id}/status`, {
         method: "PUT", headers: authHeaders(),
@@ -621,14 +625,59 @@ function ApplicationsTab({ authHeaders, onUpdate }: { authHeaders: () => Record<
       onUpdate();
     } catch (err) {
       alert("Network error. Please check your connection and try again.");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Delete this application?")) return;
-    await fetch(`/api/applications/${id}`, { method: "DELETE", headers: authHeaders() });
-    load();
-    onUpdate();
+  const requestStatusChange = (e: React.MouseEvent, id: number, status: string) => {
+    // Stop event from bubbling to the parent expand/collapse button
+    e.stopPropagation();
+
+    if (status === "accepted") {
+      setConfirmModal({
+        open: true,
+        title: "Accept Player",
+        message: "Accept this player and add them to the team roster? A welcome email will also be sent to congratulate them.",
+        confirmLabel: "Accept & Send Email",
+        confirmColor: "bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/30",
+        onConfirm: () => {
+          setConfirmModal((prev) => ({ ...prev, open: false }));
+          doUpdateStatus(id, status);
+        },
+      });
+    } else if (status === "rejected") {
+      setConfirmModal({
+        open: true,
+        title: "Reject Applicant",
+        message: "Reject this application? An email will be sent informing them of the decision.",
+        confirmLabel: "Reject & Send Email",
+        confirmColor: "bg-red-600 hover:bg-red-500 shadow-red-600/30",
+        onConfirm: () => {
+          setConfirmModal((prev) => ({ ...prev, open: false }));
+          doUpdateStatus(id, status);
+        },
+      });
+    } else {
+      doUpdateStatus(id, status);
+    }
+  };
+
+  const handleDelete = async (e: React.MouseEvent, id: number) => {
+    e.stopPropagation();
+    setConfirmModal({
+      open: true,
+      title: "Delete Application",
+      message: "Permanently delete this application? This cannot be undone.",
+      confirmLabel: "Delete",
+      confirmColor: "bg-red-600 hover:bg-red-500 shadow-red-600/30",
+      onConfirm: async () => {
+        setConfirmModal((prev) => ({ ...prev, open: false }));
+        await fetch(`/api/applications/${id}`, { method: "DELETE", headers: authHeaders() });
+        load();
+        onUpdate();
+      },
+    });
   };
 
   const statusColors: Record<string, string> = {
@@ -641,6 +690,54 @@ function ApplicationsTab({ authHeaders, onUpdate }: { authHeaders: () => Record<
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
       <h2 className="font-display text-4xl uppercase tracking-tight text-white mb-8">Applications</h2>
+
+      {/* ─── Confirmation Modal ─── */}
+      <AnimatePresence>
+        {confirmModal.open && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+            onClick={() => setConfirmModal((prev) => ({ ...prev, open: false }))}
+          >
+            {/* Backdrop */}
+            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+
+            {/* Dialog */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative z-10 w-full max-w-md glass-card-3d rounded-2xl p-8 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="font-display text-2xl uppercase tracking-tight text-white mb-3">
+                {confirmModal.title}
+              </h3>
+              <p className="text-slate-400 text-sm leading-relaxed mb-8">
+                {confirmModal.message}
+              </p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setConfirmModal((prev) => ({ ...prev, open: false }))}
+                  className="px-5 py-2.5 glass text-slate-300 rounded-lg text-sm font-bold uppercase tracking-wider hover:bg-white/10 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmModal.onConfirm}
+                  disabled={isProcessing}
+                  className={`px-5 py-2.5 text-white rounded-lg text-sm font-bold uppercase tracking-wider transition-all shadow-lg disabled:opacity-50 ${confirmModal.confirmColor}`}
+                >
+                  {isProcessing ? "Processing..." : confirmModal.confirmLabel}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Email Sent Toast */}
       <AnimatePresence>
@@ -702,16 +799,18 @@ function ApplicationsTab({ authHeaders, onUpdate }: { authHeaders: () => Record<
 
                   {/* Trial Decision Buttons */}
                   <div className="flex flex-wrap gap-2 mb-3">
-                    <button onClick={() => updateStatus(a.id, "accepted")}
-                      className={`flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg border transition-all ${
+                    <button onClick={(e) => requestStatusChange(e, a.id, "accepted")}
+                      disabled={isProcessing}
+                      className={`flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg border transition-all disabled:opacity-50 ${
                         a.status === "accepted"
                           ? "bg-emerald-600 text-white border-emerald-500 shadow-lg shadow-emerald-600/20"
                           : "border-emerald-500/30 text-emerald-400 hover:bg-emerald-600 hover:text-white hover:border-emerald-500"
                       }`}>
                       <Check size={14} /> Accept — Send Welcome Email
                     </button>
-                    <button onClick={() => updateStatus(a.id, "rejected")}
-                      className={`flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg border transition-all ${
+                    <button onClick={(e) => requestStatusChange(e, a.id, "rejected")}
+                      disabled={isProcessing}
+                      className={`flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg border transition-all disabled:opacity-50 ${
                         a.status === "rejected"
                           ? "bg-red-600 text-white border-red-500 shadow-lg shadow-red-600/20"
                           : "border-red-500/30 text-red-400 hover:bg-red-600 hover:text-white hover:border-red-500"
@@ -723,12 +822,13 @@ function ApplicationsTab({ authHeaders, onUpdate }: { authHeaders: () => Record<
                   {/* Other status buttons */}
                   <div className="flex flex-wrap gap-2">
                     {["pending", "reviewed"].map((s) => (
-                      <button key={s} onClick={() => updateStatus(a.id, s)}
-                        className={`text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg border transition-colors ${a.status === s ? statusColors[s] : "border-white/10 text-slate-500 hover:text-white hover:border-white/20"}`}>
+                      <button key={s} onClick={(e) => requestStatusChange(e, a.id, s)}
+                        disabled={isProcessing}
+                        className={`text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg border transition-colors disabled:opacity-50 ${a.status === s ? statusColors[s] : "border-white/10 text-slate-500 hover:text-white hover:border-white/20"}`}>
                         {s}
                       </button>
                     ))}
-                    <button onClick={() => handleDelete(a.id)} className="ml-auto flex items-center gap-1 text-xs text-red-400 hover:text-red-300 transition-colors">
+                    <button onClick={(e) => handleDelete(e, a.id)} className="ml-auto flex items-center gap-1 text-xs text-red-400 hover:text-red-300 transition-colors">
                       <Trash2 size={12} /> Delete
                     </button>
                   </div>
