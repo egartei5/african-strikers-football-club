@@ -1,22 +1,43 @@
 import { Router, Request, Response } from "express";
 import { getDb } from "../db";
 import { requireAdmin, AuthRequest } from "../middleware/auth";
-import { sendWelcomeEmail, sendRejectionEmail } from "../email";
+import {
+  sendApplicationConfirmation,
+  sendWelcomeEmail,
+  sendRejectionEmail,
+} from "../email";
 
 const router = Router();
 
-// POST /api/applications — Public
-router.post("/", (req: Request, res: Response) => {
+// POST /api/applications — Public (player submits join form)
+router.post("/", async (req: Request, res: Response) => {
   const { full_name, age, email, phone, position, experience, message } = req.body;
+
   if (!full_name || !age || !email || !phone || !position || !experience) {
     return res.status(400).json({ error: "All required fields must be filled" });
   }
 
-  const db = getDb();
-  db.prepare("INSERT INTO applications (full_name, age, email, phone, position, experience, message) VALUES (?, ?, ?, ?, ?, ?, ?)").run(
-    full_name, age, email, phone, position, experience, message || null
-  );
-  res.status(201).json({ ok: true, message: "Application submitted successfully" });
+  try {
+    const db = getDb();
+    db.prepare(
+      "INSERT INTO applications (full_name, age, email, phone, position, experience, message) VALUES (?, ?, ?, ?, ?, ?, ?)"
+    ).run(full_name, age, email, phone, position, experience, message || null);
+
+    console.log(`📋 [APPLICATIONS] New application saved: ${full_name} (${position}) — ${email}`);
+
+    // Send confirmation email and wait for actual result
+    const emailResult = await sendApplicationConfirmation(email, full_name, position);
+
+    res.status(201).json({
+      ok: true,
+      message: "Application submitted successfully",
+      emailSent: emailResult.sent,
+      emailError: emailResult.sent ? undefined : emailResult.error,
+    });
+  } catch (err: any) {
+    console.error("❌ [APPLICATIONS] Failed to process application:", err.message);
+    res.status(500).json({ error: "Failed to submit application. Please try again." });
+  }
 });
 
 // GET /api/applications — Admin
@@ -41,6 +62,8 @@ router.put("/:id/status", requireAdmin, async (req: AuthRequest, res: Response) 
   db.prepare("UPDATE applications SET status = ? WHERE id = ?").run(status, id);
 
   let playerAdded = false;
+  let emailSent = false;
+  let emailError: string | undefined;
 
   // When accepted: add to the players roster automatically
   if (status === "accepted" && existing.status !== "accepted") {
@@ -58,37 +81,34 @@ router.put("/:id/status", requireAdmin, async (req: AuthRequest, res: Response) 
         null
       );
       playerAdded = true;
-      console.log(`✅ Player "${existing.full_name}" added to roster as #${nextNumber} (${existing.position})`);
+      console.log(`✅ [APPLICATIONS] Player "${existing.full_name}" added to roster as #${nextNumber} (${existing.position})`);
     }
 
-    // Send welcome email
-    sendWelcomeEmail(existing.email, existing.full_name, existing.position)
-      .then((sent) => {
-        if (sent) console.log(`✅ Welcome email queued for ${existing.full_name} (${existing.email})`);
-      })
-      .catch((err) => console.error("❌ Email error:", err));
+    // Send welcome email — await the actual result
+    const result = await sendWelcomeEmail(existing.email, existing.full_name, existing.position);
+    emailSent = result.sent;
+    emailError = result.error;
   }
 
   // If un-accepting (changing away from accepted), remove auto-added player
   if (existing.status === "accepted" && status !== "accepted") {
     db.prepare("DELETE FROM players WHERE name = ? AND role IS NULL").run(existing.full_name);
-    console.log(`🗑️ Removed "${existing.full_name}" from roster (status changed to ${status})`);
+    console.log(`🗑️ [APPLICATIONS] Removed "${existing.full_name}" from roster (status changed to ${status})`);
   }
 
   // Send rejection email when application is rejected
   if (status === "rejected" && existing.status !== "rejected") {
-    sendRejectionEmail(existing.email, existing.full_name, existing.position)
-      .then((sent) => {
-        if (sent) console.log(`📧 Rejection email queued for ${existing.full_name} (${existing.email})`);
-      })
-      .catch((err) => console.error("❌ Email error:", err));
+    const result = await sendRejectionEmail(existing.email, existing.full_name, existing.position);
+    emailSent = result.sent;
+    emailError = result.error;
   }
 
   const updated = db.prepare("SELECT * FROM applications WHERE id = ?").get(id);
   res.json({
     ...updated as object,
     playerAdded,
-    emailSent: (status === "accepted" && existing.status !== "accepted") || (status === "rejected" && existing.status !== "rejected"),
+    emailSent,
+    emailError: emailSent ? undefined : emailError,
   });
 });
 

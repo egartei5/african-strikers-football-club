@@ -3,6 +3,7 @@ import cors from "cors";
 import path from "path";
 import dotenv from "dotenv";
 import { getDb } from "./db";
+import { verifyEmailConfig } from "./email";
 
 // Load env vars
 dotenv.config();
@@ -65,6 +66,11 @@ app.use("/api/auth/login", (req, res, next) => {
 getDb();
 console.log("📦 Database initialized");
 
+// Verify email configuration at startup
+verifyEmailConfig().catch((err) => {
+  console.error("❌ Email config verification failed:", err.message);
+});
+
 // ─── API Routes ─────────────────────────────────────────────────
 app.use("/api/auth", authRoutes);
 app.use("/api/players", playerRoutes);
@@ -73,6 +79,22 @@ app.use("/api/news", newsRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/applications", applicationRoutes);
 app.use("/api/staff", staffRoutes);
+
+// ─── Health check endpoint ──────────────────────────────────────
+app.get("/api/health", (_req, res) => {
+  const smtpConfigured = !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
+  const adminEmailSet = !!process.env.ADMIN_EMAIL;
+
+  res.json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+    email: {
+      smtpConfigured,
+      adminEmailSet,
+      from: process.env.SMTP_FROM ? "set" : "default",
+    },
+  });
+});
 
 // ─── Dashboard stats endpoint ───────────────────────────────────
 app.get("/api/stats", (req, res) => {

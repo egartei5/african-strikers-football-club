@@ -11,6 +11,7 @@ export function Contact() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [emailConfirmed, setEmailConfirmed] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,11 +33,13 @@ export function Contact() {
         body: JSON.stringify(formData),
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        const data = await res.json();
         throw new Error(data.error || "Failed to send message");
       }
 
+      setEmailConfirmed(data.autoReplySent === true);
       setIsSubmitted(true);
       form.reset();
     } catch (err: any) {
@@ -175,8 +178,18 @@ export function Contact() {
                         Thank you for contacting African Strikers. Our team will get
                         back to you as soon as possible.
                       </p>
+                      {emailConfirmed ? (
+                        <p className="text-emerald-400/80 text-xs">
+                          ✅ A confirmation email has been sent to your inbox.
+                        </p>
+                      ) : (
+                        <p className="text-amber-400/80 text-xs">
+                          ⚠️ Your message was saved. We couldn't send a confirmation email,
+                          but our team will still get back to you.
+                        </p>
+                      )}
                       <button
-                        onClick={() => setIsSubmitted(false)}
+                        onClick={() => { setIsSubmitted(false); setEmailConfirmed(false); }}
                         className="mt-4 px-6 py-3 glass hover:bg-white/10 text-white text-sm font-bold uppercase tracking-wider rounded-lg transition-colors"
                       >
                         Send Another Message

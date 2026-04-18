@@ -10,6 +10,8 @@ export function Join() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [submittedEmail, setSubmittedEmail] = useState("");
+  const [emailWasSent, setEmailWasSent] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,10 +19,11 @@ export function Join() {
     setError(null);
 
     const form = e.target as HTMLFormElement;
+    const playerEmail = (form.elements.namedItem("email") as HTMLInputElement).value;
     const formData = {
       full_name: (form.elements.namedItem("fullName") as HTMLInputElement).value,
       age: parseInt((form.elements.namedItem("age") as HTMLInputElement).value),
-      email: (form.elements.namedItem("email") as HTMLInputElement).value,
+      email: playerEmail,
       phone: (form.elements.namedItem("phone") as HTMLInputElement).value,
       position: (form.elements.namedItem("position") as HTMLSelectElement).value,
       experience: (form.elements.namedItem("experience") as HTMLSelectElement).value,
@@ -34,11 +37,14 @@ export function Join() {
         body: JSON.stringify(formData),
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        const data = await res.json();
         throw new Error(data.error || "Failed to submit application");
       }
 
+      setSubmittedEmail(playerEmail);
+      setEmailWasSent(data.emailSent === true);
       setIsSubmitted(true);
       form.reset();
     } catch (err: any) {
@@ -47,6 +53,11 @@ export function Join() {
       setIsSubmitting(false);
     }
   };
+
+  // Mask email for display: j***@example.com
+  const maskedEmail = submittedEmail
+    ? submittedEmail.replace(/^(.)(.*)(@.*)$/, (_, first, middle, domain) => first + "•".repeat(Math.min(middle.length, 5)) + domain)
+    : "";
 
   return (
     <div className="flex flex-col min-h-screen pt-24 bg-[#050505]">
@@ -78,8 +89,18 @@ export function Join() {
                 staff will review your application and contact you regarding
                 upcoming trial dates.
               </p>
+              {emailWasSent ? (
+                <p className="text-emerald-400/80 text-sm">
+                  ✅ A confirmation email has been sent to <strong>{maskedEmail}</strong>
+                </p>
+              ) : (
+                <p className="text-amber-400/80 text-sm">
+                  ⚠️ Your application was saved, but we couldn't send a confirmation email.
+                  Don't worry — our team will still review your application.
+                </p>
+              )}
               <button
-                onClick={() => setIsSubmitted(false)}
+                onClick={() => { setIsSubmitted(false); setEmailWasSent(false); }}
                 className="mt-4 px-8 py-4 glass hover:bg-white/10 text-white font-display text-xl uppercase tracking-wider rounded-lg transition-colors"
               >
                 Submit Another Application
