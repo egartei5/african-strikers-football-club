@@ -98,6 +98,49 @@ app.get("/api/health", (_req, res) => {
   });
 });
 
+// ─── Email diagnostic endpoint ──────────────────────────────────
+app.get("/api/email-test", async (_req, res) => {
+  try {
+    const nodemailer = await import("nodemailer");
+    const port = parseInt(process.env.SMTP_PORT || "587");
+    const secure = process.env.SMTP_SECURE === "true" || port === 465;
+
+    const transporter = nodemailer.default.createTransport({
+      host: process.env.SMTP_HOST,
+      port,
+      secure,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
+
+    await transporter.verify();
+
+    const to = process.env.ADMIN_EMAIL || process.env.SMTP_USER || "";
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || process.env.SMTP_USER,
+      to,
+      subject: "✅ ASFC Email Test — Working!",
+      text: "This is a test email from your African Strikers FC server. Email is configured correctly!",
+      html: "<p>This is a test email from your <strong>African Strikers FC</strong> server. Email is configured correctly! ✅</p>",
+    });
+
+    res.json({ ok: true, message: `Test email sent to ${to}` });
+  } catch (err: any) {
+    res.status(500).json({
+      ok: false,
+      error: err.message,
+      code: err.code,
+      hint: err.code === "EAUTH"
+        ? "Gmail auth failed — make sure 2-Step Verification is ON and you used a Google App Password (not your regular Gmail password)."
+        : err.code === "ECONNECTION" || err.code === "ENOTFOUND"
+        ? "Cannot connect to Gmail SMTP — check SMTP_HOST is smtp.gmail.com and SMTP_PORT is 587."
+        : "Check error message above.",
+    });
+  }
+});
+
 // ─── Dashboard stats endpoint ───────────────────────────────────
 app.get("/api/stats", (req, res) => {
   const authHeader = req.headers.authorization;
