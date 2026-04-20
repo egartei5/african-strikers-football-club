@@ -120,11 +120,6 @@ const IMAGES = [
     alt: "Ray Ra — Fullback warming up",
     category: "Training",
   },
-  {
-    src: "/gallery/.JPG",
-    alt: "ASFC pre-match warm-up",
-    category: "Training",
-  },
 ];
 
 const CATEGORIES = ["All", "Team", "Matchday", "Players", "Training"];

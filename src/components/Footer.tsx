@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Logo } from "./Logo";
 import {
@@ -9,7 +10,35 @@ import {
   Mail,
 } from "lucide-react";
 
+const SOCIAL_LINKS = [
+  { icon: Facebook, label: "Facebook", href: "https://www.facebook.com/people/African-Strikers-FC/61576785016744/" },
+  { icon: Twitter, label: "Twitter / X", href: null },
+  { icon: Instagram, label: "Instagram", href: null },
+  { icon: Youtube, label: "YouTube", href: null },
+];
+
 export function Footer() {
+  const [email, setEmail] = useState("");
+  const [subState, setSubState] = useState<"idle" | "loading" | "success" | "duplicate" | "error">("idle");
+
+  const handleNewsletter = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubState("loading");
+    try {
+      const res = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setSubState(data.alreadySubscribed ? "duplicate" : "success");
+      setEmail("");
+    } catch {
+      setSubState("error");
+    }
+  };
+
   return (
     <footer className="bg-[#050505] border-t border-white/10 pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -32,30 +61,29 @@ export function Footer() {
               community development. We build champions on and off the pitch.
             </p>
             <div className="flex items-center gap-4">
-              <a
-                href="#"
-                className="w-10 h-10 rounded-full glass flex items-center justify-center text-slate-400 hover:text-teal-400 hover:border-teal-400/50 transition-colors"
-              >
-                <Facebook size={18} />
-              </a>
-              <a
-                href="#"
-                className="w-10 h-10 rounded-full glass flex items-center justify-center text-slate-400 hover:text-teal-400 hover:border-teal-400/50 transition-colors"
-              >
-                <Twitter size={18} />
-              </a>
-              <a
-                href="#"
-                className="w-10 h-10 rounded-full glass flex items-center justify-center text-slate-400 hover:text-teal-400 hover:border-teal-400/50 transition-colors"
-              >
-                <Instagram size={18} />
-              </a>
-              <a
-                href="#"
-                className="w-10 h-10 rounded-full glass flex items-center justify-center text-slate-400 hover:text-teal-400 hover:border-teal-400/50 transition-colors"
-              >
-                <Youtube size={18} />
-              </a>
+              {SOCIAL_LINKS.map(({ icon: Icon, label, href }) =>
+                href ? (
+                  <a
+                    key={label}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={label}
+                    className="w-10 h-10 rounded-full glass flex items-center justify-center text-slate-400 hover:text-teal-400 hover:border-teal-400/50 transition-colors"
+                  >
+                    <Icon size={18} />
+                  </a>
+                ) : (
+                  <div
+                    key={label}
+                    title={`${label} — Coming Soon`}
+                    aria-label={`${label} — Coming Soon`}
+                    className="w-10 h-10 rounded-full glass flex items-center justify-center text-slate-600 cursor-not-allowed select-none"
+                  >
+                    <Icon size={18} />
+                  </div>
+                )
+              )}
             </div>
           </div>
 
@@ -140,23 +168,38 @@ export function Footer() {
               Subscribe to get the latest news, match updates, and exclusive
               offers.
             </p>
-            <form
-              className="flex flex-col gap-3"
-              onSubmit={(e) => e.preventDefault()}
-            >
-              <input
-                type="email"
-                placeholder="Your email address"
-                className="glass border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all"
-                required
-              />
-              <button
-                type="submit"
-                className="bg-teal-600 hover:bg-teal-500 text-white font-display text-lg uppercase tracking-wider rounded-lg px-4 py-3 transition-colors"
-              >
-                Subscribe
-              </button>
-            </form>
+            {subState === "success" ? (
+              <div className="bg-emerald-900/20 border border-emerald-500/30 rounded-lg px-4 py-3 text-emerald-400 text-sm font-medium">
+                You're subscribed! Welcome to the ASFC family.
+              </div>
+            ) : subState === "duplicate" ? (
+              <div className="bg-teal-900/20 border border-teal-500/30 rounded-lg px-4 py-3 text-teal-400 text-sm font-medium">
+                You're already subscribed!
+              </div>
+            ) : (
+              <form className="flex flex-col gap-3" onSubmit={handleNewsletter}>
+                <input
+                  type="email"
+                  placeholder="Your email address"
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value); if (subState === "error") setSubState("idle"); }}
+                  className="glass border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all"
+                  required
+                />
+                {subState === "error" && (
+                  <p className="text-red-400 text-xs">Something went wrong. Please try again.</p>
+                )}
+                <button
+                  type="submit"
+                  disabled={subState === "loading"}
+                  className="bg-teal-600 hover:bg-teal-500 disabled:bg-teal-800 disabled:cursor-not-allowed text-white font-display text-lg uppercase tracking-wider rounded-lg px-4 py-3 transition-colors flex items-center justify-center gap-2"
+                >
+                  {subState === "loading" ? (
+                    <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Subscribing...</>
+                  ) : "Subscribe"}
+                </button>
+              </form>
+            )}
           </div>
         </div>
 
@@ -166,12 +209,12 @@ export function Footer() {
             All rights reserved.
           </p>
           <div className="flex items-center gap-6 text-sm text-slate-500">
-            <a href="#" className="hover:text-white transition-colors">
+            <Link to="/privacy" className="hover:text-white transition-colors">
               Privacy Policy
-            </a>
-            <a href="#" className="hover:text-white transition-colors">
+            </Link>
+            <Link to="/terms" className="hover:text-white transition-colors">
               Terms of Service
-            </a>
+            </Link>
           </div>
         </div>
       </div>

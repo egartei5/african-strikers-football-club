@@ -117,6 +117,12 @@ function initSchema(db: Database.Database) {
       is_active INTEGER DEFAULT 1,
       created_at TEXT DEFAULT (datetime('now'))
     );
+
+    CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT NOT NULL UNIQUE,
+      subscribed_at TEXT DEFAULT (datetime('now'))
+    );
   `);
 
   // Seed default admin if none exists

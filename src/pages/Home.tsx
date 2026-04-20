@@ -9,13 +9,17 @@ import {
   ArrowRight,
   Calendar,
   Trophy,
-  Users,
-  Shield,
   MapPin,
   ChevronRight,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useDocumentTitle } from "@/lib/useDocumentTitle";
+
+const FALLBACK_FIXTURES = [
+  { date: "Apr 12, 2026", time: "15:00", opp: "Baraya FC", oppLogo: "BF", type: "Home", comp: "ADH Super League" },
+  { date: "Apr 19, 2026", time: "14:00", opp: "Junior Professional FC", oppLogo: "JP", type: "Away", comp: "ADH Super League" },
+  { date: "Apr 26, 2026", time: "16:00", opp: "All Nation FC", oppLogo: "AN", type: "Home", comp: "ADH Super League" },
+  { date: "May 03, 2026", time: "15:30", opp: "Mande FC", oppLogo: "MF", type: "Away", comp: "ADH Super League" },
+];
 
 export function Home() {
   useDocumentTitle();
@@ -28,6 +32,7 @@ export function Home() {
   ];
 
   const [featuredPlayers, setFeaturedPlayers] = useState(FALLBACK_FEATURED);
+  const [upcomingFixtures, setUpcomingFixtures] = useState(FALLBACK_FIXTURES);
 
   useEffect(() => {
     fetch("/api/players?featured=true")
@@ -35,6 +40,22 @@ export function Home() {
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
           setFeaturedPlayers(data.map((p: any) => ({ name: p.name, pos: p.position, num: p.number })));
+        }
+      })
+      .catch(() => {});
+
+    fetch("/api/fixtures")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setUpcomingFixtures(data.map((f: any) => ({
+            date: f.date,
+            time: f.time,
+            opp: f.opponent,
+            oppLogo: f.opp_logo,
+            type: f.type,
+            comp: f.comp,
+          })));
         }
       })
       .catch(() => {});
@@ -307,6 +328,7 @@ export function Home() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Next Match (Featured) */}
+            {upcomingFixtures.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -320,11 +342,11 @@ export function Home() {
                   <div className="p-8 md:p-10">
                     <div className="flex items-center justify-between mb-8">
                       <span className="px-4 py-1.5 rounded-full bg-teal-900/30 text-teal-400 text-xs font-bold uppercase tracking-widest border border-teal-500/20">
-                        Next Match — ADH Super League
+                        Next Match — {upcomingFixtures[0].comp}
                       </span>
                       <span className="text-slate-400 text-sm font-medium flex items-center gap-2">
                         <Calendar size={16} />
-                        Sat, Apr 12 • 15:00
+                        {upcomingFixtures[0].date} • {upcomingFixtures[0].time}
                       </span>
                     </div>
 
@@ -341,16 +363,16 @@ export function Home() {
                           VS
                         </span>
                         <span className="text-sm font-bold uppercase tracking-widest text-teal-500">
-                          ADH Super League
+                          {upcomingFixtures[0].type}
                         </span>
                       </div>
 
                       <div className="flex flex-col items-center text-center gap-4 w-full md:w-1/3">
                         <div className="w-24 h-24 rounded-full glass border-2 border-white/10 flex items-center justify-center text-2xl font-black text-white shadow-xl">
-                          BF
+                          {upcomingFixtures[0].oppLogo}
                         </div>
                         <h4 className="text-xl font-bold uppercase tracking-wider text-white">
-                          Baraya FC
+                          {upcomingFixtures[0].opp}
                         </h4>
                       </div>
                     </div>
@@ -373,29 +395,11 @@ export function Home() {
                 </div>
               </Tilt3DCard>
             </motion.div>
+            )}
 
             {/* Other Matches */}
             <div className="flex flex-col gap-6">
-              {[
-                {
-                  date: "Apr 19",
-                  opp: "Junior Professional FC",
-                  type: "Away",
-                  time: "14:00",
-                },
-                {
-                  date: "Apr 26",
-                  opp: "All Nation FC",
-                  type: "Home",
-                  time: "16:00",
-                },
-                {
-                  date: "May 03",
-                  opp: "Mande FC",
-                  type: "Away",
-                  time: "15:30",
-                },
-              ].map((match, i) => (
+              {upcomingFixtures.slice(1, 4).map((match, i) => (
                 <motion.div
                   initial={{ opacity: 0, x: 30 }}
                   whileInView={{ opacity: 1, x: 0 }}

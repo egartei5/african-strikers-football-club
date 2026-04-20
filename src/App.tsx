@@ -15,6 +15,8 @@ import { News } from "./pages/News";
 import { Join } from "./pages/Join";
 import { Contact } from "./pages/Contact";
 import { NotFound } from "./pages/NotFound";
+import { PrivacyPolicy } from "./pages/PrivacyPolicy";
+import { Terms } from "./pages/Terms";
 
 // Lazy load Admin — most users never visit this page
 const Admin = lazy(() => import("./pages/Admin").then((m) => ({ default: m.Admin })));
@@ -44,6 +46,8 @@ export default function App() {
           <Route path="news" element={<News />} />
           <Route path="join" element={<Join />} />
           <Route path="contact" element={<Contact />} />
+          <Route path="privacy" element={<PrivacyPolicy />} />
+          <Route path="terms" element={<Terms />} />
         </Route>
         <Route path="/admin" element={<Suspense fallback={<PageLoader />}><Admin /></Suspense>} />
         <Route path="*" element={<NotFound />} />

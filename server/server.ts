@@ -16,6 +16,7 @@ import newsRoutes from "./routes/news";
 import contactRoutes from "./routes/contact";
 import applicationRoutes from "./routes/applications";
 import staffRoutes from "./routes/staff";
+import newsletterRoutes from "./routes/newsletter";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -79,6 +80,7 @@ app.use("/api/news", newsRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/applications", applicationRoutes);
 app.use("/api/staff", staffRoutes);
+app.use("/api/newsletter", newsletterRoutes);
 
 // ─── Health check endpoint ──────────────────────────────────────
 app.get("/api/health", (_req, res) => {

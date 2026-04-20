@@ -302,22 +302,25 @@ export function Contact() {
       </section>
 
       {/* Map Section */}
-      <section className="h-96 bg-[#050505] relative border-t border-white/10 flex items-center justify-center overflow-hidden">
-        <div
-          className="absolute inset-0 opacity-20"
-          style={{
-            backgroundImage: "radial-gradient(#334155 1px, transparent 1px)",
-            backgroundSize: "24px 24px",
-          }}
-        ></div>
-        <ParticleField count={8} />
-        <div className="relative z-10 flex flex-col items-center gap-4 text-slate-500">
-          <div className="glow-pulse rounded-full p-4">
-            <MapPin size={48} className="text-teal-700" />
+      <section className="relative border-t border-white/10 overflow-hidden">
+        <div className="relative h-96">
+          <iframe
+            title="Brooklyn Park, Minnesota"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d90210.78821583705!2d-93.43178!3d45.094!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x52b33f6a1a6b9c43%3A0x3a4e7d3a0a0a0a0a!2sBrooklyn%20Park%2C%20MN!5e0!3m2!1sen!2sus!4v1700000000000!5m2!1sen!2sus"
+            width="100%"
+            height="100%"
+            style={{ border: 0, filter: "invert(90%) hue-rotate(180deg) saturate(0.6) brightness(0.85)" }}
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+          {/* Overlay badge */}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 glass border border-white/10 rounded-full px-5 py-3 shadow-xl z-10">
+            <MapPin size={18} className="text-teal-400 shrink-0" />
+            <span className="text-sm font-bold uppercase tracking-widest text-white">
+              Brooklyn Park, Minnesota
+            </span>
           </div>
-          <span className="text-sm font-bold uppercase tracking-widest">
-            Brooklyn Park, Minnesota
-          </span>
         </div>
       </section>
     </div>
