@@ -27,18 +27,18 @@ const PLAYER_IMAGES: Record<string, string> = {
 
 const PLAYERS = [
   // Goalkeepers
-  { name: "Leo", pos: "Goalkeeper", num: "1", role: "Captain Candidate" },
+  { name: "Leo", pos: "Goalkeeper", num: "1" },
   { name: "Prince", pos: "Goalkeeper", num: "30" },
   // Defenders
-  { name: "Ray Ra", pos: "Right Back / Left Back", num: "2" },
-  { name: "Justin", pos: "Center Back", num: "4", role: "Captain Candidate" },
+  { name: "Ray Ra", pos: "Right Back / Left Back", num: "2", role: "Captain" },
+  { name: "Justin", pos: "Center Back", num: "4" },
   { name: "Kittee", pos: "Center Back", num: "5" },
   { name: "Jojo", pos: "Center Back", num: "6" },
   { name: "Patrick", pos: "Center Back", num: "3" },
   { name: "Victor", pos: "Left Back", num: "15" },
   // Midfielders
-  { name: "Lawrence", pos: "Midfield", num: "8", role: "Captain Candidate" },
-  { name: "Yussufu", pos: "Midfield", num: "6", role: "Captain Candidate" },
+  { name: "Lawrence", pos: "Midfield", num: "8" },
+  { name: "Yussufu", pos: "Midfield", num: "6" },
   { name: "Koffie", pos: "Attacking Midfielder", num: "10" },
   { name: "Abdoulaye", pos: "Midfield", num: "14" },
   { name: "Mamadou", pos: "Midfield", num: "16" },
@@ -51,7 +51,7 @@ const PLAYERS = [
   { name: "Jack", pos: "Winger", num: "17" },
   { name: "Kafeme", pos: "Winger", num: "19" },
   // Strikers
-  { name: "Barclay", pos: "Striker", num: "9" },
+  { name: "Barclay", pos: "Striker", num: "9", role: "Captain" },
   { name: "Savey Jones", pos: "Striker", num: "21" },
   { name: "Elijah", pos: "Forward", num: "23" },
 ];
@@ -92,10 +92,8 @@ const FORMATIONS = {
 };
 
 const CAPTAINS = [
-  { name: "Justin", pos: "Center Back", desc: "Commanding presence at the back. Leads by example with fearless defending and vocal organization." },
-  { name: "Lawrence", pos: "Midfield", desc: "Engine of the team. Controls tempo, sets the standard in training, and drives the squad forward." },
-  { name: "Yussufu", pos: "Midfield", desc: "A tireless competitor. Covers every blade of grass and inspires those around him with relentless energy." },
-  { name: "Leo", pos: "Goalkeeper", desc: "The last line of defense. Calm under pressure, commands the box, and keeps the team focused." },
+  { name: "Barclay", pos: "Striker", desc: "The leader up front. Drives the attack with relentless energy and sets the standard for the whole squad." },
+  { name: "Ray Ra", pos: "Right Back / Left Back", desc: "A versatile and vocal presence at the back. Leads by example with tenacious defending and sharp decision-making." },
 ];
 
 export function Team() {
