@@ -20,6 +20,9 @@ const PLAYER_IMAGES: Record<string, string> = {
   "Jack": "/gallery/Jack.JPG",
   "Kafeme": "/gallery/Kafeme.JPG",
   "Barclay": "/gallery/Barclay.JPG",
+  "Abdoulaye": "/gallery/Abdoulaye.JPG",
+  "Mamadou": "/gallery/Mamadou.JPG",
+  "Elijah": "/gallery/Elijah.JPG",
 };
 
 const PLAYERS = [
@@ -50,6 +53,7 @@ const PLAYERS = [
   // Strikers
   { name: "Barclay", pos: "Striker", num: "9" },
   { name: "Savey Jones", pos: "Striker", num: "21" },
+  { name: "Elijah", pos: "Forward", num: "23" },
 ];
 
 const STAFF = [

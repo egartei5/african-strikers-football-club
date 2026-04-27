@@ -120,9 +120,41 @@ const IMAGES = [
     alt: "Ray Ra — Fullback warming up",
     category: "Training",
   },
+  // New player photos
+  {
+    src: "/gallery/Abdoulaye.JPG",
+    alt: "Abdoulaye — Midfielder",
+    category: "Players",
+  },
+  {
+    src: "/gallery/Mamadou.JPG",
+    alt: "Mamadou — Midfielder",
+    category: "Players",
+  },
+  {
+    src: "/gallery/Elijah.JPG",
+    alt: "Elijah — Forward",
+    category: "Players",
+  },
+  // Team Kits
+  {
+    src: "/gallery/kit1.JPG",
+    alt: "ASFC home kit",
+    category: "Kits",
+  },
+  {
+    src: "/gallery/kit2.JPG",
+    alt: "ASFC away kit",
+    category: "Kits",
+  },
+  {
+    src: "/gallery/kit3.JPG",
+    alt: "ASFC training kit",
+    category: "Kits",
+  },
 ];
 
-const CATEGORIES = ["All", "Team", "Matchday", "Players", "Training"];
+const CATEGORIES = ["All", "Team", "Matchday", "Players", "Training", "Kits"];
 
 export function Gallery() {
   useDocumentTitle("Gallery");
