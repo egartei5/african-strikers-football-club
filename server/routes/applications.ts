@@ -9,6 +9,8 @@ import {
 
 const router = Router();
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 // POST /api/applications — Public (player submits join form)
 router.post("/", async (req: Request, res: Response) => {
   const { full_name, age, email, phone, position, experience, message } = req.body;
@@ -16,6 +18,12 @@ router.post("/", async (req: Request, res: Response) => {
   if (!full_name || !age || !email || !phone || !position || !experience) {
     return res.status(400).json({ error: "All required fields must be filled" });
   }
+  if (typeof full_name !== "string" || full_name.length > 100) return res.status(400).json({ error: "Name must be 100 characters or fewer" });
+  if (typeof email !== "string" || !EMAIL_RE.test(email) || email.length > 254) return res.status(400).json({ error: "A valid email address is required" });
+  if (typeof phone !== "string" || phone.length > 20) return res.status(400).json({ error: "Phone number must be 20 characters or fewer" });
+  if (typeof experience !== "string" || experience.length > 2000) return res.status(400).json({ error: "Experience must be 2000 characters or fewer" });
+  if (message && (typeof message !== "string" || message.length > 2000)) return res.status(400).json({ error: "Message must be 2000 characters or fewer" });
+
 
   try {
     const db = getDb();

@@ -1,6 +1,6 @@
 import Database from "better-sqlite3";
 import path from "path";
-import crypto from "crypto";
+import bcrypt from "bcryptjs";
 
 const DB_PATH = path.resolve(process.cwd(), "asfc.db");
 
@@ -130,7 +130,7 @@ function initSchema(db: Database.Database) {
   if (adminCount.count === 0) {
     const adminUser = process.env.ADMIN_USER || "admin";
     const adminPass = process.env.ADMIN_PASS || "strikers2026";
-    const hash = crypto.createHash("sha256").update(adminPass).digest("hex");
+    const hash = bcrypt.hashSync(adminPass, 12);
     db.prepare("INSERT INTO admin (username, password_hash) VALUES (?, ?)").run(adminUser, hash);
     console.log(`✅ Default admin account created`);
   }

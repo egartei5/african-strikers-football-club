@@ -4,11 +4,13 @@ import { requireAdmin, AuthRequest } from "../middleware/auth";
 
 const router = Router();
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 // POST /api/newsletter — Public (visitor subscribes)
 router.post("/", (req: Request, res: Response) => {
   const { email } = req.body;
 
-  if (!email || typeof email !== "string" || !email.includes("@")) {
+  if (!email || typeof email !== "string" || !EMAIL_RE.test(email) || email.length > 254) {
     return res.status(400).json({ error: "A valid email address is required." });
   }
 

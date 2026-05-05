@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import crypto from "crypto";
+import bcrypt from "bcryptjs";
 import { getDb } from "../db";
 
 const router = Router();
@@ -15,11 +16,28 @@ router.post("/login", (req: Request, res: Response) => {
   }
 
   const db = getDb();
-  const hash = crypto.createHash("sha256").update(password).digest("hex");
 
-  const admin = db.prepare("SELECT id, username FROM admin WHERE username = ? AND password_hash = ?").get(username, hash) as { id: number; username: string } | undefined;
+  const admin = db.prepare("SELECT id, username, password_hash FROM admin WHERE username = ?").get(username) as { id: number; username: string; password_hash: string } | undefined;
 
   if (!admin) {
+    return res.status(401).json({ error: "Invalid credentials" });
+  }
+
+  // Support legacy SHA-256 hashes and transparently upgrade to bcrypt on login
+  const isSha256 = /^[a-f0-9]{64}$/.test(admin.password_hash);
+  let valid = false;
+  if (isSha256) {
+    const legacyHash = crypto.createHash("sha256").update(password).digest("hex");
+    valid = legacyHash === admin.password_hash;
+    if (valid) {
+      const upgraded = bcrypt.hashSync(password, 12);
+      db.prepare("UPDATE admin SET password_hash = ? WHERE id = ?").run(upgraded, admin.id);
+    }
+  } else {
+    valid = bcrypt.compareSync(password, admin.password_hash);
+  }
+
+  if (!valid) {
     return res.status(401).json({ error: "Invalid credentials" });
   }
 
@@ -87,11 +105,16 @@ router.put("/password", (req: Request, res: Response) => {
     return res.status(400).json({ error: "New password must be at least 8 characters" });
   }
 
-  const currentHash = crypto.createHash("sha256").update(currentPassword).digest("hex");
-  const admin = db.prepare("SELECT id FROM admin WHERE id = ? AND password_hash = ?").get(session.admin_id, currentHash) as { id: number } | undefined;
-  if (!admin) return res.status(401).json({ error: "Current password is incorrect" });
+  const adminRow = db.prepare("SELECT id, password_hash FROM admin WHERE id = ?").get(session.admin_id) as { id: number; password_hash: string } | undefined;
+  if (!adminRow) return res.status(401).json({ error: "Admin not found" });
 
-  const newHash = crypto.createHash("sha256").update(newPassword).digest("hex");
+  const isSha256 = /^[a-f0-9]{64}$/.test(adminRow.password_hash);
+  const currentValid = isSha256
+    ? crypto.createHash("sha256").update(currentPassword).digest("hex") === adminRow.password_hash
+    : bcrypt.compareSync(currentPassword, adminRow.password_hash);
+  if (!currentValid) return res.status(401).json({ error: "Current password is incorrect" });
+
+  const newHash = bcrypt.hashSync(newPassword, 12);
   db.prepare("UPDATE admin SET password_hash = ? WHERE id = ?").run(newHash, session.admin_id);
 
   // Invalidate all other sessions for this admin (force re-login)

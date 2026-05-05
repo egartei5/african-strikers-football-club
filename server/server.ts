@@ -4,6 +4,8 @@ import path from "path";
 import dotenv from "dotenv";
 import { getDb } from "./db";
 import { verifyEmailConfig } from "./email";
+import { requireAdmin } from "./middleware/auth";
+import { rateLimit } from "./middleware/rateLimit";
 
 // Load env vars
 dotenv.config();
@@ -36,32 +38,21 @@ app.use((_req, res, next) => {
   res.setHeader("X-Frame-Options", "DENY");
   res.setHeader("X-XSS-Protection", "1; mode=block");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader(
+    "Content-Security-Policy",
+    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-ancestors 'none';"
+  );
   if (isProd) {
     res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
   }
   next();
 });
 
-// ─── Rate limiting (basic) ──────────────────────────────────────
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
-const RATE_LIMIT_WINDOW = 60_000; // 1 minute
-const RATE_LIMIT_MAX = 30; // max requests per window
-
-app.use("/api/auth/login", (req, res, next) => {
-  const ip = req.ip || "unknown";
-  const now = Date.now();
-  const entry = rateLimitMap.get(ip);
-
-  if (entry && now < entry.resetAt) {
-    entry.count++;
-    if (entry.count > RATE_LIMIT_MAX) {
-      return res.status(429).json({ error: "Too many requests. Try again later." });
-    }
-  } else {
-    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
-  }
-  next();
-});
+// ─── Rate limiting ──────────────────────────────────────────────
+app.use("/api/auth/login", rateLimit(10, 60_000));      // 10 login attempts/min
+app.use("/api/contact", rateLimit(5, 60_000));           // 5 contact submissions/min
+app.use("/api/applications", rateLimit(3, 60_000));      // 3 applications/min
+app.use("/api/newsletter", rateLimit(5, 60_000));        // 5 newsletter signups/min
 
 // Initialize database
 getDb();
@@ -84,22 +75,11 @@ app.use("/api/newsletter", newsletterRoutes);
 
 // ─── Health check endpoint ──────────────────────────────────────
 app.get("/api/health", (_req, res) => {
-  const smtpConfigured = !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
-  const adminEmailSet = !!process.env.ADMIN_EMAIL;
-
-  res.json({
-    status: "ok",
-    timestamp: new Date().toISOString(),
-    email: {
-      smtpConfigured,
-      adminEmailSet,
-      from: process.env.SMTP_FROM ? "set" : "default",
-    },
-  });
+  res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-// ─── Email diagnostic endpoint ──────────────────────────────────
-app.get("/api/email-test", async (_req, res) => {
+// ─── Email diagnostic endpoint (admin only) ─────────────────────
+app.get("/api/email-test", requireAdmin, async (_req, res) => {
   try {
     const nodemailer = await import("nodemailer");
     const port = parseInt(process.env.SMTP_PORT || "587");

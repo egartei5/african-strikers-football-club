@@ -5,6 +5,8 @@ import { sendContactNotification, sendContactAutoReply } from "../email";
 
 const router = Router();
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 // POST /api/contact — Public (visitor submits contact form)
 router.post("/", async (req: Request, res: Response) => {
   const { name, email, subject, message } = req.body;
@@ -12,6 +14,11 @@ router.post("/", async (req: Request, res: Response) => {
   if (!name || !email || !subject || !message) {
     return res.status(400).json({ error: "All fields are required" });
   }
+  if (typeof name !== "string" || name.length > 100) return res.status(400).json({ error: "Name must be 100 characters or fewer" });
+  if (typeof email !== "string" || !EMAIL_RE.test(email) || email.length > 254) return res.status(400).json({ error: "A valid email address is required" });
+  if (typeof subject !== "string" || subject.length > 200) return res.status(400).json({ error: "Subject must be 200 characters or fewer" });
+  if (typeof message !== "string" || message.length > 5000) return res.status(400).json({ error: "Message must be 5000 characters or fewer" });
+
 
   try {
     const db = getDb();
