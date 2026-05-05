@@ -183,25 +183,28 @@ export function Home() {
                 More Than Just <br />A Football Club
               </h3>
               <p className="text-slate-400 text-lg leading-relaxed mb-6">
-                Founded in 2020 in Brooklyn Park, Minnesota, African Strikers
-                emerged from a shared passion for the beautiful game and a deep
-                commitment to the African diaspora community. We compete in the
-                Around Da Hours Super League — and last season we topped the
-                regular season table before finishing 3rd in the playoffs.
+                African Strikers Football Club has deep roots in Minnesota's
+                Liberian diaspora. Founded in 2002 as Saint Paul Strikers FC,
+                the club became a symbol of unity for a community building new
+                lives in the United States. In 2021, the club was reborn as
+                African Strikers FC — carrying that same spirit into a new era
+                of competition and growth.
               </p>
               <p className="text-slate-400 text-lg leading-relaxed mb-10">
-                We've never won the league or the playoffs — but that's what
-                drives us. With 29 goals scored in the 2025 season and a squad
-                that's only getting stronger, we're more determined than ever
-                to bring home our first championship in 2026.
+                Competing in the Around Da Hours Super League, ASFC has grown
+                into a nationally recognized club, drawing players from
+                Philadelphia, Fargo, Arizona, Maryland, and beyond. In 2025,
+                under Coach Solari, the club recorded its highest-ever regular
+                season points total and claimed 3rd place — the first silverware
+                in ASFC history.
               </p>
 
               <div className="grid grid-cols-2 gap-8">
                 {[
-                  { value: "3rd", label: "2025 Playoffs" },
+                  { value: "2002", label: "Est. Saint Paul Strikers" },
+                  { value: "2021", label: "Reborn as ASFC" },
                   { value: "24", label: "Pts (8W-3L) '25" },
-                  { value: "29", label: "Goals Scored '25" },
-                  { value: "2020", label: "Established" },
+                  { value: "3rd", label: "2025 Playoffs" },
                 ].map((stat, i) => (
                   <motion.div
                     key={i}

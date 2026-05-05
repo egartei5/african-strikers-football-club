@@ -13,7 +13,7 @@ export function About() {
       <PageHeader
         badge="Our Story"
         title="About The Club"
-        subtitle="Founded on the principles of unity, discipline, and excellence. We are more than a football club; we are a community institution."
+        subtitle="Born from Minnesota's Liberian diaspora in 2002 and reborn as African Strikers FC in 2021. More than a football club — a legacy built on resilience, unity, and excellence."
         backgroundImage="/gallery/Teams.JPG"
       />
 
@@ -159,34 +159,34 @@ export function About() {
           <div className="space-y-12 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-white/10 before:to-transparent">
             {[
               {
-                year: "2020",
+                year: "2002",
                 title: "The Foundation",
-                desc: "African Strikers FC was founded in Brooklyn Park, Minnesota by a group of passionate players from the African diaspora community, united by a love of the beautiful game and a shared dream.",
+                desc: "Saint Paul Strikers FC is founded by CEO Francis and key members of Minnesota's Liberian diaspora — a club born from community, passion, and purpose.",
+              },
+              {
+                year: "2011",
+                title: "Relocation & Reinvention",
+                desc: "The club moves to Brooklyn Park, joins the Lizardo League, and merges with Yah FC to form Jr. Pro FC under the leadership of Joseph Opee Karbar and Jonathan Giadyu.",
               },
               {
                 year: "2021",
-                title: "Building the Squad",
-                desc: "In our first full year, we focused on building chemistry, recruiting players from across the community, and laying the groundwork for a competitive squad.",
+                title: "African Strikers FC Is Born",
+                desc: "Joseph and Jonathan return to establish African Strikers FC — a rebrand and evolution of the original club. Coach Daddy Boy guides the team to a playoff appearance in their debut season.",
               },
               {
                 year: "2022",
-                title: "Finding Our Feet",
-                desc: "Year two brought invaluable experience as we sharpened our identity and began establishing ASFC as a respected name in local football circles.",
-              },
-              {
-                year: "2023",
-                title: "ADH Super League",
-                desc: "Joined the Around Da Hours Super League — the premier community football league in the Twin Cities area — and competed against the best local sides for the first time.",
+                title: "An Identity Forged",
+                desc: "Coach Frankis Killen rebuilds the squad and launches one of the most successful periods in club history across two strong, recognition-earning seasons.",
               },
               {
                 year: "2025",
-                title: "Regular Season Champions",
-                desc: "A breakout season — 8 wins, 3 losses, 29 goals scored, and 24 points put us 1st in the regular season table. We fell in the playoff semifinals to Baraya FC on penalties, finishing 3rd overall.",
+                title: "First Silverware",
+                desc: "Under Coach Solari, ASFC records its highest-ever regular season points total and claims 3rd place — the first trophy in club history.",
               },
               {
                 year: "2026",
                 title: "Chasing the Title",
-                desc: "With the core squad returning and a burning hunger from last season's heartbreak, 2026 is the year we chase our first-ever league title. The journey continues.",
+                desc: "With a national roster, a youth academy in Liberia, and a hunger born from experience, African Strikers FC sets its sights on the first league championship.",
               },
             ].map((item, i) => (
               <motion.div
